@@ -34,6 +34,7 @@ class restore_tincanlaunch_activity_structure_step extends restore_activity_stru
         $paths = array();
 
         $paths[] = new restore_path_element('tincanlaunch', '/activity/tincanlaunch');
+        $paths[] = new restore_path_element('tincanlaunchlrs', '/activity/tincanlaunch/tincanlaunchlrs');
 
         // Return the paths wrapped into standard activity structure.
         return $this->prepare_activity_structure($paths);
@@ -44,14 +45,38 @@ class restore_tincanlaunch_activity_structure_step extends restore_activity_stru
      * @param array $data information
      */
     protected function process_tincanlaunch($data) {
+        global $DB, $CFG;
+
+        $data = (object)$data;
+        $data->course = $this->get_courseid();
+
+        $old_contextid = $this->task->get_old_contextid();
+        $contextid = $this->task->get_contextid();
+
+        // Check if there are actual e-learnings in the activity that should get copied. If not copy the launch url as is
+        $fs = get_file_storage();
+        $files = $fs->get_area_files($old_contextid, 'mod_tincanlaunch', 'content', 0);
+        if (count($files) > 0) {
+            $base = preg_quote($CFG->wwwroot, "/");
+            $pattern = "/($base\/pluginfile.php\/)([0-9]+)(\/mod_tincanlaunch\/content\/index_TINCAN.html)/";
+            $replace = '${1}'.$contextid.'$3';
+            $data->tincanlaunchurl =  preg_replace($pattern, $replace, $data->tincanlaunchurl); 
+        }
+
+        $newitemid = $DB->insert_record('tincanlaunch', $data);
+        $this->apply_activity_instance($newitemid);
+    }
+
+    protected function process_tincanlaunchlrs($data) {
         global $DB;
 
         $data = (object)$data;
         $oldid = $data->id;
-        $data->course = $this->get_courseid();
 
-        $newitemid = $DB->insert_record('tincanlaunch', $data);
-        $this->apply_activity_instance($newitemid);
+        $data->tincanlaunchid = $this->get_new_parentid('tincanlaunch');
+
+        $newitemid = $DB->insert_record('tincanlaunch_lrs', $data);
+        $this->set_mapping('tincanlaunch_lrs', $oldid, $newitemid);
     }
 
     protected function after_execute() {
@@ -59,5 +84,7 @@ class restore_tincanlaunch_activity_structure_step extends restore_activity_stru
 
         // Add tincanlaunch related files.
         $this->add_related_files('mod_tincanlaunch', 'intro', null);
+        $this->add_related_files('mod_tincanlaunch', 'package', null);
+        $this->add_related_files('mod_tincanlaunch', 'content', null);
     }
 }

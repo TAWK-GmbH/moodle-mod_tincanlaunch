@@ -80,8 +80,8 @@ if ($tincanlaunch->intro) { // Conditions to show the intro can change to look f
                     <span id="tincanlaunch_completioncheck"></span> \
                     <p id="tincanlaunch_attemptprogress">' + message + '</p> \
                     <p id="tincanlaunch_exit"> \
-                        <a href="complete.php?id=<?php echo $id ?>&n=<?php echo $n ?>" title="Return to course"> \
-                            Return to course \
+                        <a class="btn btn-primary" href="complete.php?id=<?php echo $id ?>&n=<?php echo $n ?>" title="Zurück zum Kurs"> \
+                            Zurück zum Kurs \
                         </a> \
                     </p> \
                 </div>\
@@ -133,17 +133,12 @@ if ($lrsrespond == 200) {
         array_push(
             $registrationdatafromlrs[$key],
             "<a tabindex=\"0\" id='tincanrelaunch_attempt'
-            onkeyup=\"key_test('".$key."')\" onclick=\"mod_tincanlaunch_launchexperience('".$key."')\" style='cursor: pointer;'>"
+            onkeyup=\"key_test('".$key."')\" onclick=\"mod_tincanlaunch_launchexperience('".$key."')\" class='btn btn-primary'>"
             . get_string('tincanlaunchviewlaunchlink', 'tincanlaunch') . "</a>"
         );
-        $registrationdatafromlrs[$key]['created'] = date_format(
-            date_create($registrationdatafromlrs[$key]['created']),
-            'D, d M Y H:i:s'
-        );
-        $registrationdatafromlrs[$key]['lastlaunched'] = date_format(
-            date_create($registrationdatafromlrs[$key]['lastlaunched']),
-            'D, d M Y H:i:s'
-        );
+        
+        $registrationdatafromlrs[$key]['created'] = userdate(date_create($registrationdatafromlrs[$key]['created'])->getTimestamp(), '%d. %B %Y, %R');
+        $registrationdatafromlrs[$key]['lastlaunched'] = userdate(date_create($registrationdatafromlrs[$key]['lastlaunched'])->getTimestamp(), '%d. %B %Y, %R');
     }
     $table = new html_table();
     $table->id = 'tincanlaunch_attempttable';
@@ -157,21 +152,21 @@ if ($lrsrespond == 200) {
     echo html_writer::table($table);
     // Needs to come after previous attempts so a non-sighted user can hear launch options.
     if ($tincanlaunch->tincanmultipleregs) {
-        echo "<p id='tincanlaunch_newattempt'><a tabindex=\"0\"
+        echo "<p id='tincanlaunch_newattempt' style='text-align: center'><button tabindex=\"0\"
         onkeyup=\"key_test('".$registrationid."')\" onclick=\"mod_tincanlaunch_launchexperience('"
             . $registrationid
-            . "')\" style=\"cursor: pointer;\">"
+            . "')\" class=\"btn btn-primary\">"
             . get_string('tincanlaunch_attempt', 'tincanlaunch')
-            . "</a></p>";
+            . "</button></p>";
     }
 } else {
     echo "<p tabindex=\"0\"
         onkeyup=\"key_test('".$registrationid."')\"
-        id='tincanlaunch_newattempt'><a onclick=\"mod_tincanlaunch_launchexperience('"
+        id='tincanlaunch_newattempt' style='text-align: center'><button onclick=\"mod_tincanlaunch_launchexperience('"
         . $registrationid
-        . "')\" style=\"cursor: pointer;\">"
+        . "')\" class=\"btn btn-primary\">"
         . get_string('tincanlaunch_attempt', 'tincanlaunch')
-        . "</a></p>";
+        . "</button></p>";
 }
 
 // Add a form to be posted based on the attempt selected.

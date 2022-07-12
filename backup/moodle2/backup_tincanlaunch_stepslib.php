@@ -37,8 +37,27 @@ class backup_tincanlaunch_activity_structure_step extends backup_activity_struct
             'tincanverbid', 'overridedefaults', 'tincanmultipleregs', 'timecreated',
             'timemodified'));
 
+        $tincanlaunchlrs = new backup_nested_element(
+            'tincanlaunchlrs', 
+            array('id'), 
+            array( 'lrsendpoint', 
+                'lrsauthentication', 
+                'lrslogin', 
+                'lrspass',
+                'customacchp', 
+                'useactoremail', 
+                'lrsduration'));
+
+        $tincanlaunch->add_child($tincanlaunchlrs);
+
         // Define sources.
         $tincanlaunch->set_source_table('tincanlaunch', array('id' => backup::VAR_ACTIVITYID));
+        $tincanlaunchlrs->set_source_table('tincanlaunch_lrs', array('tincanlaunchid' => backup::VAR_PARENTID));
+
+        // Define file annotations
+        $tincanlaunch->annotate_files('mod_tincanlaunch', 'intro', null); // This file areas haven't itemid
+        $tincanlaunch->annotate_files('mod_tincanlaunch', 'package', null); // This file areas haven't itemid
+        $tincanlaunch->annotate_files('mod_tincanlaunch', 'content', null); // This file areas haven't itemid
 
         // Return the root element (tincanlaunch), wrapped into standard activity structure.
         return $this->prepare_activity_structure($tincanlaunch);
